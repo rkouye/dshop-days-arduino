@@ -8,8 +8,12 @@
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-void receivedCallback(char* topic, byte* payload, unsigned int length) {
+int lastCmd = 0;
 
+void receivedCallback(char* topic, byte* payload, unsigned int length) {
+  lastCmd = millis();
+  greenLed_on();
+  
   // For debug
   Serial.print("Message received: ");
   Serial.println(topic);
@@ -108,9 +112,19 @@ void loop()
   if (!client.connected()) {
     // EMERGENCY STOP
     servosStop();
+    blueLed_off();
+    
+    // RECONNECT
     mqttconnect();
   }
   // FREE TO USE BLUE LED
   client.loop();
 
+  // No Command since too long (3 seconds)
+  if (millis() - lastCmd > 3000){
+    // EMERGENCY STOP
+    servosStop();
+    greenLed_toggle();
+    delay(400);
+  }
 }
