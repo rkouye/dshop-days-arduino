@@ -75,8 +75,7 @@ void setup()
 
   // Init Servos
   initServos();
-  servosStop();
-
+  
   // Init Serial
   Serial.begin(115200);
 
@@ -120,11 +119,11 @@ void loop()
   // FREE TO USE BLUE LED
   client.loop();
 
-  // No Command since too long (3 seconds)
-  if (millis() - lastCmd > 3000){
+  // No Command since too long (0.2 seconds)
+  if (millis() - lastCmd > 200){
     // EMERGENCY STOP
     servosStop();
     greenLed_toggle();
-    delay(400);
+    delay(200);
   }
 }
