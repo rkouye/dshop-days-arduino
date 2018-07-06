@@ -119,8 +119,8 @@ void loop()
   // FREE TO USE BLUE LED
   client.loop();
 
-  // No Command since too long (0.2 seconds)
-  if (millis() - lastCmd > 200){
+  // No Command since too long (0.15 seconds)
+  if (millis() - lastCmd > 150){
     // EMERGENCY STOP
     servosStop();
     greenLed_toggle();

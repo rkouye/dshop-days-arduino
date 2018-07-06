@@ -21,6 +21,9 @@ function intentFulfiller(){
     break;
     default :
     console.log("No intent");
+    payload.road = null;
+    payload.target = null;
+    payload.nextTarget = null;
   }
 }
 
@@ -50,13 +53,14 @@ function goToPoint(point){
     console.log("Closest point is "+closest.point);
     payload.road = dijkstra.find_path(payload.staticGraph, closest.point, point);
     let i = 0;
-    while( distance(payload.car.front, getPoint(payload.road[i])) < ROAD_RANGE || closest.point !== point){
+    while( distance(payload.car.front, getPoint(payload.road[i])) < ROAD_RANGE && closest.point !== point){
       i++;
     }
     point = payload.road[i];
   }
   
   console.log("Target : "+point);
+  payload.nextTarget = point;
 
   const pointX = getPoint(point).x;
   const pointY = getPoint(point).y;
@@ -161,13 +165,13 @@ function stop(){
   publish("MUZ");
 }
 function turnClockwise(){
-  publish(`M${String.fromCharCode(180)}${String.fromCharCode(70)}`);
+  publish(`M${String.fromCharCode(100)}${String.fromCharCode(90)}`);
 }
 function turnCounterClockwise(){
-  publish(`M${String.fromCharCode(180)}${String.fromCharCode(70)}`);
+  publish(`M${String.fromCharCode(85)}${String.fromCharCode(70)}`);
 }
 function forward(){
-  publish(`M${String.fromCharCode(180)}${String.fromCharCode(70)}`);
+  publish(`M${String.fromCharCode(108)}${String.fromCharCode(0)}`);
 }
 function startSocket() {
 
@@ -253,6 +257,7 @@ client.on("message", function(topic, message, packet){
     case TOPIC_DS_DYNAMIC :
     payload.dynamic = JSON.parse(message);
     payload.car = carInfoFromDynamic(payload.dynamic);
+    //payload.car = { front : getPoint("p104"),back : getPoint("p86"), center : getPoint("p100"), valid : true }
     intentFulfiller();
     break;
   }
@@ -283,10 +288,6 @@ function sendInfo(connection){
   
   //console.log(dijkstra.find_path(payload.staticGraph, "p1", "p3"));
   //console.log(sortedDistanceToPointOnRoad({x : 0, y : 0}));
-  connection.send(JSON.stringify({
-    static : payload.static,
-    dynamic : payload.dynamic,
-    car : payload.car
-  }));
+  connection.send(JSON.stringify(payload));
 
 }
