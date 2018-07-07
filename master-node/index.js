@@ -27,12 +27,13 @@ function intentFulfiller(){
   }
 }
 
-const ROAD_RANGE = 60;
+const ROAD_RANGE = 40;
 
 function getPoint(name){
   return  payload.static.road.vertices[name];
 }
 function distance(p1, p2){
+  if( !p1 || !p2) return Number.POSITIVE_INFINITY;
   return Math.sqrt( Math.pow(p1.x - p2.x, 2) + (Math.pow(p1.y - p2.y, 2)));
 }
 
@@ -44,6 +45,7 @@ function goToPoint(point){
 
   if(!payload.car.valid) {
     console.warn("Can't see car, won't do anything");
+    stop();
     return;
   }
   let closest = sortedDistanceToPointOnRoad(payload.car.front)[0];
@@ -52,11 +54,14 @@ function goToPoint(point){
   } else {
     console.log("Closest point is "+closest.point);
     payload.road = dijkstra.find_path(payload.staticGraph, closest.point, point);
+    
     let i = 0;
-    while( distance(payload.car.front, getPoint(payload.road[i])) < ROAD_RANGE && closest.point !== point){
-      i++;
+    if(payload.road.length > 0) {
+      while( (distance(payload.car.front, getPoint(payload.road[i])) < ROAD_RANGE) && closest.point !== point){
+        i++;
+      }
+      if(payload.road[i]) point = payload.road[i];
     }
-    point = payload.road[i];
   }
   
   console.log("Target : "+point);
@@ -82,8 +87,7 @@ function goToPoint(point){
   const rad = Vec.toAngle(carVect, dirVect);
   
   const distFrontToPoint =  Math.sqrt( Math.pow(payload.car.front.x - pointX, 2) + (Math.pow(payload.car.front.y - pointY, 2)));
-  
-  if(angle > 20) {
+  if(angle > 40) {
     console.log("Correcting angle "+angle);
     if(rad>0){
       turnCounterClockwise();
@@ -95,6 +99,7 @@ function goToPoint(point){
     forward();
   } else {
     stop();
+    intent = {};
     console.log("On point")
   }
 }
